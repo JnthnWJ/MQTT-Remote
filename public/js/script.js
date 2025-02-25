@@ -47,10 +47,53 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 1000);
         } finally {
             // Reset button state
-            setTimeout(() => {
-                button.removeAttribute('aria-busy');
-                button.disabled = false;
-            }, 500);
+            button.removeAttribute('aria-busy');
+            button.disabled = false;
         }
+    }
+
+    // Add event listeners for TV remote buttons
+    const tvControls = document.querySelector('.tv-controls');
+    if (tvControls) {
+        tvControls.addEventListener('click', async (event) => {
+            const button = event.target.closest('button[data-command]');
+            if (button) {
+                const command = button.dataset.command;
+
+                // Show loading state
+                button.setAttribute('aria-busy', 'true');
+                button.disabled = true;
+
+                try {
+                    const response = await fetch(`/api/tv/${command}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Store the original text
+                        const originalText = button.textContent;
+                        // Show success feedback
+                        button.textContent = 'Sent!';
+                        setTimeout(() => {
+                            button.textContent = originalText;
+                        }, 1000);
+                    } else {
+                        // Show error feedback
+                        alert(`Error sending command: ${data.message}`);
+                    }
+                } catch (error) {
+                    console.error('Error sending TV command:', error);
+                    alert('Error sending TV command. See console for details.');
+                } finally {
+                    // Reset button state
+                    button.removeAttribute('aria-busy');
+                    button.disabled = false;
+                }
+            }
+        });
     }
 });

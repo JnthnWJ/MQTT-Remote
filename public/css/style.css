@@ -43,6 +43,48 @@ footer {
     }
 }
 
+/* TV Remote Control Styles */
+.tv-controls {
+    margin-top: 2rem;
+    border-top: 1px solid #ccc;
+    padding-top: 1rem;
+}
+
+.tv-controls h2 {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.tv-controls .grid {
+    grid-template-columns: repeat(3, 1fr); /* 3 columns by default */
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.tv-controls .grid > div {
+    /* Empty divs for spacing */
+    height: 0;
+    padding: 0;
+}
+
+.tv-controls button {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+}
+
+/* Mobile adjustments for TV controls */
+@media (max-width: 576px) {
+    .tv-controls .grid {
+        grid-template-columns: repeat(3, 1fr); /* Keep 3 columns on mobile */
+        gap: 0.4rem;
+    }
+
+    .tv-controls button {
+        font-size: 0.8rem; /* Smaller font size on mobile */
+        padding: 0.5rem;
+    }
+}
+
 /* Mobile adjustments */
 @media (max-width: 576px) {
     .grid {
