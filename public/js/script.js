@@ -74,12 +74,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     const data = await response.json();
 
                     if (data.success) {
-                        // Store the original text
-                        const originalText = button.textContent;
+                        // Store the original HTML content (the icon)
+                        const originalHTML = button.innerHTML;
                         // Show success feedback
-                        button.textContent = 'Sent!';
+                        button.innerHTML = '<span>Sent!</span>';
                         setTimeout(() => {
-                            button.textContent = originalText;
+                            button.innerHTML = originalHTML;
                         }, 1000);
                     } else {
                         // Show error feedback

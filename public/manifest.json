@@ -1,0 +1,46 @@
+{
+  "name": "Wallpaper MQTT Remote",
+  "short_name": "MQTT Remote",
+  "description": "A simple web app to control MQTT topics for wallpaper control",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1095c1",
+  "icons": [
+    {
+      "src": "icons/icons8-remote-blue-16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icons8-remote-blue-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icons8-remote-blue-57.png",
+      "sizes": "57x57",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icons8-remote-blue-60.png",
+      "sizes": "60x60",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icons8-remote-blue-72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icons8-remote-blue-76.png",
+      "sizes": "76x76",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icons8-remote-blue-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    }
+  ]
+}
