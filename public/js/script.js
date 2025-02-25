@@ -52,6 +52,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Function to send a TV command
+    async function sendTvCommand(command) {
+        try {
+            const response = await fetch(`/api/tv/${command}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            return await response.json();
+        } catch (error) {
+            console.error(`Error sending TV command ${command}:`, error);
+            throw error;
+        }
+    }
+
+    // Function to show button feedback
+    function showButtonFeedback(button, message = 'Sent!', duration = 1000) {
+        const originalHTML = button.innerHTML;
+        button.innerHTML = `<span>${message}</span>`;
+        return new Promise(resolve => {
+            setTimeout(() => {
+                button.innerHTML = originalHTML;
+                resolve();
+            }, duration);
+        });
+    }
+
     // Add event listeners for TV remote buttons
     const tvControls = document.querySelector('.tv-controls');
     if (tvControls) {
@@ -65,25 +93,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.disabled = true;
 
                 try {
-                    const response = await fetch(`/api/tv/${command}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    });
-                    const data = await response.json();
-
-                    if (data.success) {
+                    // Special handling for Photos button
+                    if (command === 'Photos') {
                         // Store the original HTML content (the icon)
                         const originalHTML = button.innerHTML;
-                        // Show success feedback
-                        button.innerHTML = '<span>Sent!</span>';
+                        
+                        // Sequence: Home -> Wait -> Down -> Enter
+                        button.innerHTML = '<span>Home...</span>';
+                        await sendTvCommand('Home');
+                        
+                        // Wait a moment (1.5 seconds)
+                        await new Promise(resolve => setTimeout(resolve, 1500));
+                        
+                        button.innerHTML = '<span>Down...</span>';
+                        await sendTvCommand('Down');
+                        
+                        // Wait a moment (500ms)
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        
+                        button.innerHTML = '<span>Enter...</span>';
+                        await sendTvCommand('Enter');
+                        
+                        // Show success feedback and restore original icon
+                        button.innerHTML = '<span>Done!</span>';
                         setTimeout(() => {
                             button.innerHTML = originalHTML;
                         }, 1000);
                     } else {
-                        // Show error feedback
-                        alert(`Error sending command: ${data.message}`);
+                        // Normal button handling
+                        const data = await sendTvCommand(command);
+                        
+                        if (data.success) {
+                            // Show success feedback
+                            await showButtonFeedback(button);
+                        } else {
+                            // Show error feedback
+                            alert(`Error sending command: ${data.message}`);
+                        }
                     }
                 } catch (error) {
                     console.error('Error sending TV command:', error);

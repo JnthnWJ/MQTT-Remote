@@ -76,12 +76,13 @@ footer {
 /* Top row buttons */
 .top-buttons {
     margin-bottom: 1.5rem;
+    grid-template-columns: repeat(3, 1fr);
 }
 
 /* Media controls */
 .media-buttons {
-    grid-template-columns: 1fr 1fr;
-    max-width: 300px;
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 450px;
     margin: 0 auto 1.5rem;
 }
 
