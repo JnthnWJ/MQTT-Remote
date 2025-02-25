@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallpaper MQTT Remote</title>
+    <!-- Pico CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1>Wallpaper Remote Control</h1>
+        </header>
+        
+        <section class="controls">
+            <div class="grid">
+                <button id="previous-btn" class="secondary">Previous</button>
+                <button id="next-btn" class="primary">Next</button>
+            </div>
+        </section>
+        
+        <footer>
+            <p>MQTT Remote Control | Connected to 192.168.0.193:1883</p>
+        </footer>
+    </main>
+    
+    <!-- JavaScript -->
+    <script src="js/script.js"></script>
+</body>
+</html>

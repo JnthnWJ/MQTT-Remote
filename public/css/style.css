@@ -1,0 +1,56 @@
+/* Custom styles for MQTT Remote */
+
+body {
+    padding: 20px 0;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.controls {
+    margin: 2rem 0;
+}
+
+.grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+button {
+    font-size: 1.2rem;
+    padding: 1rem;
+    height: auto;
+}
+
+footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+    footer {
+        opacity: 0.6;
+    }
+}
+
+/* Mobile adjustments */
+@media (max-width: 576px) {
+    .grid {
+        gap: 1rem;
+    }
+    
+    button {
+        font-size: 1rem;
+        padding: 0.8rem;
+    }
+}
