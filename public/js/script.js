@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Store the original HTML content (the icon)
                         const originalHTML = button.innerHTML;
                         
-                        // Sequence: Home -> Wait -> Down -> Enter
+                        // Sequence: Home -> Wait -> Down -> Wait -> Down -> Enter
                         button.innerHTML = '<span>Home...</span>';
                         await sendTvCommand('Home');
                         
@@ -108,6 +108,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         button.innerHTML = '<span>Down...</span>';
                         await sendTvCommand('Down');
                         
+                        // Wait a moment (500ms)
+                        await new Promise(resolve => setTimeout(resolve, 500));
+
+                        button.innerHTML = '<span>Down...</span>';
+                        await sendTvCommand('Down');
+
                         // Wait a moment (500ms)
                         await new Promise(resolve => setTimeout(resolve, 500));
                         
