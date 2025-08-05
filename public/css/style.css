@@ -43,6 +43,30 @@ footer {
     }
 }
 
+/* System Controls Styles - Footer reboot button */
+footer .system-controls {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+footer .system-controls button {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    border: 1px solid #ccc;
+}
+
+footer .system-controls button:hover {
+    opacity: 1;
+    transform: none;
+}
+
+footer .system-controls button i {
+    margin-right: 0.3rem;
+    font-size: 0.7rem;
+}
+
 /* TV Remote Control Styles */
 .tv-controls {
     margin-top: 2rem;

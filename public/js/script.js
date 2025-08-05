@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Get button elements
     const previousBtn = document.getElementById('previous-btn');
     const nextBtn = document.getElementById('next-btn');
+    const rebootBtn = document.getElementById('reboot-btn');
     
     // Add click event listeners
     previousBtn.addEventListener('click', () => {
@@ -10,6 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     nextBtn.addEventListener('click', () => {
         sendCommand('next');
+    });
+
+    // Add reboot button event listener
+    rebootBtn.addEventListener('click', () => {
+        sendRebootCommand();
     });
     
     // Function to send commands to the server
@@ -49,6 +55,59 @@ document.addEventListener('DOMContentLoaded', () => {
             // Reset button state
             button.removeAttribute('aria-busy');
             button.disabled = false;
+        }
+    }
+
+    // Function to send reboot command
+    async function sendRebootCommand() {
+        // Show confirmation dialog
+        const confirmed = confirm('Are you sure you want to reboot the computer? This will restart the remote system.');
+        if (!confirmed) {
+            return;
+        }
+
+        // Show loading state
+        const originalText = rebootBtn.innerHTML;
+        rebootBtn.setAttribute('aria-busy', 'true');
+        rebootBtn.disabled = true;
+        rebootBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Rebooting...';
+
+        try {
+            // Send reboot request to the server
+            const response = await fetch('/api/reboot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                // Show success feedback
+                rebootBtn.innerHTML = '<i class="fas fa-check"></i> Reboot Sent!';
+                setTimeout(() => {
+                    rebootBtn.innerHTML = originalText;
+                }, 3000);
+            } else {
+                // Show error feedback
+                rebootBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error!';
+                alert(`Reboot failed: ${data.message}`);
+                setTimeout(() => {
+                    rebootBtn.innerHTML = originalText;
+                }, 2000);
+            }
+        } catch (error) {
+            console.error('Error sending reboot command:', error);
+            // Show error feedback
+            rebootBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error!';
+            alert('Failed to send reboot command. Check console for details.');
+            setTimeout(() => {
+                rebootBtn.innerHTML = originalText;
+            }, 2000);
+        } finally {
+            // Reset button state
+            rebootBtn.removeAttribute('aria-busy');
+            rebootBtn.disabled = false;
         }
     }
 

@@ -4,6 +4,7 @@ const path = require('path');
 const axios = require('axios');
 require('dotenv').config();
 const crypto = require('crypto');
+const { NodeSSH } = require('node-ssh');
 
 // Create Express app
 const app = express();
@@ -12,6 +13,15 @@ const port = 3000;
 // SwitchBot API credentials
 const switchbotToken = process.env.SWITCHBOT_TOKEN;
 const switchbotSecret = process.env.SWITCHBOT_SECRET;
+
+// SSH Configuration for remote reboot
+const sshConfig = {
+    host: process.env.SSH_HOST || '192.168.0.100', // Default IP, override in .env
+    username: process.env.SSH_USERNAME || 'pi',
+    password: process.env.SSH_PASSWORD, // Optional: use password auth
+    privateKeyPath: process.env.SSH_PRIVATE_KEY_PATH, // Optional: use key auth
+    port: process.env.SSH_PORT || 22
+};
 
 // MQTT Configuration
 const mqttBroker = 'mqtt://192.168.0.193:1883'; // Replace with your MQTT broker address
@@ -126,6 +136,93 @@ app.post('/api/tv/:command', async (req, res) => {
                 error: error.message 
             });
         }
+    }
+});
+
+// SSH Reboot endpoint
+app.post('/api/reboot', async (req, res) => {
+    console.log('Reboot request received');
+
+    // Validate SSH configuration
+    if (!sshConfig.host || !sshConfig.username) {
+        return res.status(400).json({
+            success: false,
+            message: 'SSH configuration incomplete. Please set SSH_HOST and SSH_USERNAME in environment variables.'
+        });
+    }
+
+    if (!sshConfig.password && !sshConfig.privateKeyPath) {
+        return res.status(400).json({
+            success: false,
+            message: 'SSH authentication not configured. Please set either SSH_PASSWORD or SSH_PRIVATE_KEY_PATH in environment variables.'
+        });
+    }
+
+    const ssh = new NodeSSH();
+
+    try {
+        console.log(`Attempting SSH connection to ${sshConfig.username}@${sshConfig.host}:${sshConfig.port}`);
+
+        // Prepare connection config
+        const connectionConfig = {
+            host: sshConfig.host,
+            username: sshConfig.username,
+            port: sshConfig.port
+        };
+
+        // Add authentication method
+        if (sshConfig.privateKeyPath) {
+            connectionConfig.privateKeyPath = sshConfig.privateKeyPath;
+            console.log('Using private key authentication');
+        } else if (sshConfig.password) {
+            connectionConfig.password = sshConfig.password;
+            console.log('Using password authentication');
+        }
+
+        // Connect to the remote machine
+        await ssh.connect(connectionConfig);
+        console.log('SSH connection established');
+
+        // Execute reboot command
+        console.log('Executing reboot command...');
+        const result = await ssh.execCommand('sudo reboot', {
+            options: { pty: true } // Use pseudo-terminal for sudo
+        });
+
+        // Note: The connection will likely be terminated before we get a response
+        // due to the reboot, so we don't wait for the command to complete
+        console.log('Reboot command sent successfully');
+
+        // Close the SSH connection
+        ssh.dispose();
+
+        res.json({
+            success: true,
+            message: 'Reboot command sent successfully',
+            host: sshConfig.host
+        });
+
+    } catch (error) {
+        console.error('SSH reboot error:', error);
+
+        // Clean up SSH connection
+        ssh.dispose();
+
+        // Determine error type and provide helpful message
+        let errorMessage = 'Failed to execute reboot command';
+        if (error.message.includes('connect')) {
+            errorMessage = `Cannot connect to ${sshConfig.host}. Check if the host is reachable and SSH is enabled.`;
+        } else if (error.message.includes('authentication')) {
+            errorMessage = 'SSH authentication failed. Check username and password/key.';
+        } else if (error.message.includes('sudo')) {
+            errorMessage = 'Sudo permission denied. User may not have sudo privileges or password required.';
+        }
+
+        res.status(500).json({
+            success: false,
+            message: errorMessage,
+            error: error.message
+        });
     }
 });
 

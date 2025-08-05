@@ -6,14 +6,19 @@ A simple web application that allows you to control your wallpaper slideshow thr
 
 - Simple, responsive UI with two buttons: "Previous" and "Next"
 - Publishes MQTT messages to control wallpaper slideshow
+- TV remote control via SwitchBot API integration
+- SSH remote reboot functionality for computers on the local network
 - Built with Node.js, Express, and MQTT.js
 - Styled with Pico CSS for a clean, modern look
+- Progressive Web App (PWA) support for mobile installation
 
 ## Prerequisites
 
 - Node.js and npm installed on your Raspberry Pi
 - MQTT broker running at 192.168.0.193:1883
 - Network connectivity between your Raspberry Pi and MQTT broker
+- For SSH reboot: Target computer with SSH enabled and appropriate credentials
+- For TV control: SwitchBot Hub and compatible TV device
 
 ## Installation
 
@@ -36,6 +41,18 @@ cd mqtt-remote
 npm install
 ```
 
+4. Configure environment variables:
+
+```bash
+cp .env.example .env
+nano .env
+```
+
+Edit the `.env` file with your specific configuration:
+- Set SSH credentials for remote reboot functionality
+- Set SwitchBot API credentials for TV control
+- Adjust MQTT broker settings if needed
+
 ## Usage
 
 1. Start the server:
@@ -52,7 +69,10 @@ http://<raspberry-pi-ip-address>:3000
 
 Replace `<raspberry-pi-ip-address>` with the actual IP address of your Raspberry Pi.
 
-3. Use the "Previous" and "Next" buttons to control your wallpaper slideshow.
+3. Use the interface to control your devices:
+   - **Wallpaper Controls**: Use "Previous" and "Next" buttons to control slideshow
+   - **System Controls**: Use "Reboot Computer" to restart a remote computer via SSH
+   - **TV Remote**: Control your TV through SwitchBot integration
 
 ## MQTT Topics
 
@@ -61,10 +81,43 @@ This application publishes to the following MQTT topics:
 - `local/wallpaper/next` - When the "Next" button is clicked
 - `local/wallpaper/previous` - When the "Previous" button is clicked
 
+## SSH Reboot Configuration
+
+To enable the remote reboot functionality, you need to configure SSH access to the target computer:
+
+### Option 1: Password Authentication
+```bash
+# In your .env file
+SSH_HOST=192.168.0.100
+SSH_USERNAME=pi
+SSH_PASSWORD=your_password_here
+```
+
+### Option 2: SSH Key Authentication (Recommended)
+```bash
+# Generate SSH key pair (if you don't have one)
+ssh-keygen -t rsa -b 4096
+
+# Copy public key to target computer
+ssh-copy-id username@target_computer_ip
+
+# In your .env file
+SSH_HOST=192.168.0.100
+SSH_USERNAME=pi
+SSH_PRIVATE_KEY_PATH=/path/to/your/private/key
+```
+
+### Important Security Notes:
+- The target user must have sudo privileges to execute `reboot`
+- For passwordless sudo, add this line to sudoers: `username ALL=(ALL) NOPASSWD: /sbin/reboot`
+- SSH key authentication is more secure than password authentication
+- Test SSH connection manually before using the web interface
+
 ## Customization
 
 - Edit `server.js` to change MQTT broker settings or port
 - Modify `public/index.html` and `public/css/style.css` to customize the UI
+- Update SSH configuration in `.env` file for different target computers
 
 ## Running as a Service
 
