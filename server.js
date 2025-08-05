@@ -151,10 +151,10 @@ app.post('/api/reboot', async (req, res) => {
         });
     }
 
-    if (!sshConfig.password && !sshConfig.privateKeyPath) {
+    if (!sshConfig.password) {
         return res.status(400).json({
             success: false,
-            message: 'SSH authentication not configured. Please set either SSH_PASSWORD or SSH_PRIVATE_KEY_PATH in environment variables.'
+            message: 'SSH password required for reboot functionality. Please set SSH_PASSWORD in environment variables.'
         });
     }
 
@@ -163,35 +163,49 @@ app.post('/api/reboot', async (req, res) => {
     try {
         console.log(`Attempting SSH connection to ${sshConfig.username}@${sshConfig.host}:${sshConfig.port}`);
 
-        // Prepare connection config
+        // Prepare connection config with password authentication
         const connectionConfig = {
             host: sshConfig.host,
             username: sshConfig.username,
-            port: sshConfig.port
+            port: sshConfig.port,
+            password: sshConfig.password
         };
 
-        // Add authentication method
-        if (sshConfig.privateKeyPath) {
-            connectionConfig.privateKeyPath = sshConfig.privateKeyPath;
-            console.log('Using private key authentication');
-        } else if (sshConfig.password) {
-            connectionConfig.password = sshConfig.password;
-            console.log('Using password authentication');
-        }
+        console.log('Using password authentication for reboot');
 
         // Connect to the remote machine
         await ssh.connect(connectionConfig);
         console.log('SSH connection established');
 
-        // Execute reboot command
-        console.log('Executing reboot command...');
-        const result = await ssh.execCommand('sudo reboot', {
-            options: { pty: true } // Use pseudo-terminal for sudo
+        // Execute reboot command using sudo with password
+        console.log('Executing reboot command with sudo...');
+
+        // Use echo to pipe the password to sudo
+        const sudoCommand = `echo '${sshConfig.password}' | sudo -S reboot`;
+
+        const rebootResult = await ssh.execCommand(sudoCommand, {
+            options: { pty: true }
         });
 
-        // Note: The connection will likely be terminated before we get a response
-        // due to the reboot, so we don't wait for the command to complete
-        console.log('Reboot command sent successfully');
+        console.log('Reboot command result:', {
+            code: rebootResult.code,
+            stdout: rebootResult.stdout,
+            stderr: rebootResult.stderr
+        });
+
+        // Note: A successful reboot might return a non-zero code due to connection termination
+        // Check if the error is related to connection loss rather than command failure
+        if (rebootResult.code !== 0 &&
+            !rebootResult.stderr.includes('connection') &&
+            !rebootResult.stderr.includes('broken pipe') &&
+            !rebootResult.stderr.includes('Connection to') &&
+            rebootResult.stderr.trim() !== '') {
+
+            console.log('Reboot command may have failed:', rebootResult.stderr);
+            throw new Error(`Reboot command failed: ${rebootResult.stderr}`);
+        }
+
+        console.log('Reboot command executed successfully');
 
         // Close the SSH connection
         ssh.dispose();
@@ -214,8 +228,10 @@ app.post('/api/reboot', async (req, res) => {
             errorMessage = `Cannot connect to ${sshConfig.host}. Check if the host is reachable and SSH is enabled.`;
         } else if (error.message.includes('authentication')) {
             errorMessage = 'SSH authentication failed. Check username and password/key.';
-        } else if (error.message.includes('sudo')) {
-            errorMessage = 'Sudo permission denied. User may not have sudo privileges or password required.';
+        } else if (error.message.includes('sudo') || error.message.includes('incorrect password')) {
+            errorMessage = 'Sudo authentication failed. Check that the SSH password is correct and the user has sudo privileges.';
+        } else if (error.message.includes('not in the sudoers')) {
+            errorMessage = `User ${sshConfig.username} is not in the sudoers file. Please add sudo privileges for this user.`;
         }
 
         res.status(500).json({
